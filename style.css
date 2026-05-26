@@ -1,0 +1,381 @@
+* { box-sizing: border-box; }
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #030303;
+  color: #d7d7d7;
+  font-family: Consolas, "Courier New", monospace;
+}
+
+body {
+  background:
+    radial-gradient(circle at center, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0) 38%),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px),
+    #030303;
+  background-size: auto, 5px 100%, auto;
+}
+
+#mediaBackground, #mediaShade, #noise, #scanlines, #vignette, #blackout, #phraseLayer, #finalScreen {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+#mediaBackground {
+  z-index: 1;
+  overflow: hidden;
+  transition: opacity 1.5s ease, filter 1.5s ease;
+}
+
+.bg-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.03);
+  filter: grayscale(0.18) contrast(1.02) brightness(.72);
+  transition: opacity 1.25s ease, transform 10s ease, filter 1.25s ease;
+}
+.bg-media.active {
+  opacity: .62;
+  transform: scale(1.06);
+}
+
+#mediaShade {
+  z-index: 2;
+  background:
+    radial-gradient(circle at center, rgba(0,0,0,.10) 0%, rgba(0,0,0,.40) 62%, rgba(0,0,0,.68) 100%),
+    linear-gradient(180deg, rgba(0,0,0,.14), rgba(0,0,0,.56));
+  transition: opacity 1.5s ease;
+}
+
+#blackout {
+  z-index: 50;
+  background: transparent;
+  animation: blackoutBlink 11s infinite steps(1, end);
+}
+
+#noise {
+  z-index: 30;
+  opacity: .10;
+  background-image:
+    radial-gradient(circle at 17% 23%, rgba(255,255,255,.16) 0 1px, transparent 1px),
+    radial-gradient(circle at 72% 61%, rgba(255,255,255,.12) 0 1px, transparent 1px),
+    radial-gradient(circle at 41% 88%, rgba(255,255,255,.09) 0 1px, transparent 1px),
+    radial-gradient(circle at 91% 12%, rgba(255,255,255,.10) 0 1px, transparent 1px);
+  background-size: 3px 3px, 4px 4px, 5px 5px, 7px 7px;
+  animation: noiseShift .18s infinite steps(2, end);
+  mix-blend-mode: screen;
+  transition: opacity 1.5s ease;
+}
+
+#scanlines {
+  z-index: 31;
+  opacity: .14;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,.04) 0,
+    rgba(255,255,255,.04) 1px,
+    rgba(0,0,0,0) 3px,
+    rgba(0,0,0,0) 6px
+  );
+  animation: scanMove 7s linear infinite;
+  transition: opacity 1.5s ease;
+}
+
+#vignette {
+  z-index: 40;
+  box-shadow: inset 0 0 220px 90px #000, inset 0 0 30px rgba(255,255,255,.03);
+  transition: opacity 1.5s ease;
+}
+
+#phraseLayer {
+  z-index: 12;
+  transition: opacity 1.5s ease;
+}
+.bg-phrase {
+  position: absolute;
+  color: rgba(215,215,215,.24);
+  text-shadow: 0 0 10px rgba(255,255,255,.06);
+  font-size: 12px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translate3d(0,0,0) rotate(var(--rot, 0deg));
+}
+.bg-phrase.show {
+  animation: phrasePop var(--life, 6s) ease-in-out forwards;
+}
+
+#cmdWindow {
+  position: fixed;
+  z-index: 24;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(84vw, 1060px);
+  height: min(72vh, 680px);
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0, 0, 0, .42);
+  box-shadow: 0 0 22px rgba(255,255,255,.03), inset 0 0 0 1px rgba(255,255,255,.03);
+  backdrop-filter: blur(1px);
+  transition: opacity 1.5s ease, transform 1.5s ease, filter 1.5s ease;
+}
+
+#cmdHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 34px;
+  padding: 0 12px;
+  border-bottom: 1px solid rgba(255,255,255,.10);
+  color: rgba(220,220,220,.72);
+  font-size: 13px;
+  letter-spacing: .5px;
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,0));
+}
+.header-state {
+  color: #efefef;
+  text-shadow: 0 0 8px rgba(255,255,255,.08);
+}
+
+#cmdBody {
+  height: calc(100% - 34px);
+  padding: 14px 18px 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: clamp(13px, 1.15vw, 18px);
+  line-height: 1.55;
+  color: #d8d8d8;
+}
+
+#introLine, #introLine2, #logoLine, .cmd-line, #cmdPrompt {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+#introLine, #introLine2 {
+  color: rgba(220,220,220,.78);
+  flex: 0 0 auto;
+}
+#logoLine {
+  margin-top: 10px;
+  margin-bottom: 14px;
+  color: #f0f0f0;
+  flex: 0 0 auto;
+}
+#logoText {
+  letter-spacing: 3px;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(255,255,255,.08);
+  animation: cmdGlow 3.4s infinite ease-in-out;
+}
+#cmdLines {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  padding-bottom: 8px;
+}
+.cmd-line {
+  color: rgba(220,220,220,.88);
+  opacity: .96;
+}
+.cmd-line.dim { color: rgba(200,200,200,.58); }
+.cmd-line.warn { color: rgba(230,230,230,.84); }
+.cmd-line.err { color: rgba(255,255,255,.94); text-shadow: 0 0 8px rgba(255,255,255,.08); }
+
+#cmdPrompt {
+  flex: 0 0 auto;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,.06);
+  color: #f4f4f4;
+}
+.path { color: #ffffff; }
+.cursor {
+  display: inline-block;
+  width: 10px;
+  margin-left: 2px;
+  animation: blink 1s steps(1, end) infinite;
+}
+
+#statusPanel {
+  position: fixed;
+  z-index: 24;
+  left: 26px;
+  bottom: 20px;
+  color: rgba(210,210,210,.42);
+  font-size: 11px;
+  letter-spacing: 2px;
+  line-height: 1.7;
+  text-transform: uppercase;
+  transition: opacity 1.5s ease, transform 1.5s ease, filter 1.5s ease;
+}
+
+#finalScreen {
+  z-index: 80;
+  opacity: 0;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  transition: opacity 1.5s ease;
+}
+#finalWelcome,
+#finalBrandWrap {
+  opacity: 0;
+  transform: translateY(18px);
+}
+#finalWelcome {
+  color: rgba(230,230,230,.70);
+  font-size: clamp(16px, 1.5vw, 24px);
+  letter-spacing: .55em;
+  margin-bottom: 22px;
+  text-indent: .55em;
+}
+#finalBrandWrap {
+  padding: 10px 24px;
+}
+#finalBrand {
+  color: #ead8a8;
+  font-size: clamp(40px, 7vw, 110px);
+  font-weight: 700;
+  letter-spacing: .22em;
+  text-indent: .22em;
+  text-transform: uppercase;
+  text-shadow: 0 0 0 rgba(255,255,255,0), 0 0 0 rgba(255,210,120,0);
+  opacity: .14;
+}
+
+body.finalizing #mediaBackground,
+body.finalizing #mediaShade,
+body.finalizing #noise,
+body.finalizing #scanlines,
+body.finalizing #vignette,
+body.finalizing #phraseLayer,
+body.finalizing #cmdWindow,
+body.finalizing #statusPanel {
+  opacity: 0;
+}
+body.finalizing #cmdWindow,
+body.finalizing #statusPanel {
+  filter: blur(6px);
+}
+body.finalizing #cmdWindow {
+  transform: translate(-50%, -46%);
+}
+body.finalizing #finalScreen {
+  opacity: 1;
+  pointer-events: auto;
+}
+body.finalizing #finalWelcome.show,
+body.finalizing #finalBrandWrap.show {
+  animation: finalRise 1.2s ease forwards;
+}
+body.finalizing #finalBrand.ignite {
+  animation: brandIgnite 2.6s ease forwards, oldLampFlicker 7s steps(1, end) infinite 2.7s;
+}
+
+@keyframes finalRise {
+  0% { opacity: 0; transform: translateY(18px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes brandIgnite {
+  0% {
+    opacity: .05;
+    text-shadow: 0 0 0 rgba(255,255,255,0), 0 0 0 rgba(255,210,120,0);
+    filter: blur(1.2px);
+  }
+  12% {
+    opacity: .15;
+    text-shadow: 0 0 2px rgba(255,235,180,.15), 0 0 6px rgba(255,210,120,.10);
+  }
+  20% { opacity: .05; }
+  28% {
+    opacity: .24;
+    text-shadow: 0 0 3px rgba(255,240,200,.24), 0 0 12px rgba(255,210,120,.16);
+  }
+  36% { opacity: .10; }
+  48% {
+    opacity: .40;
+    text-shadow: 0 0 4px rgba(255,245,210,.45), 0 0 18px rgba(255,220,140,.22);
+  }
+  62% { opacity: .18; }
+  76% {
+    opacity: .72;
+    text-shadow: 0 0 5px rgba(255,248,220,.85), 0 0 26px rgba(255,220,150,.35), 0 0 50px rgba(255,190,80,.12);
+    filter: blur(.2px);
+  }
+  100% {
+    opacity: .96;
+    text-shadow: 0 0 6px rgba(255,248,220,.95), 0 0 18px rgba(255,226,165,.48), 0 0 42px rgba(255,195,90,.18);
+    filter: blur(0);
+  }
+}
+@keyframes oldLampFlicker {
+  0%, 84%, 100% {
+    opacity: .96;
+    text-shadow: 0 0 6px rgba(255,248,220,.95), 0 0 18px rgba(255,226,165,.48), 0 0 42px rgba(255,195,90,.18);
+  }
+  85% {
+    opacity: .52;
+    text-shadow: 0 0 3px rgba(255,240,200,.44), 0 0 10px rgba(255,210,130,.18);
+  }
+  87% {
+    opacity: .93;
+    text-shadow: 0 0 6px rgba(255,248,220,.90), 0 0 18px rgba(255,226,165,.44), 0 0 40px rgba(255,195,90,.16);
+  }
+  92% {
+    opacity: .72;
+    text-shadow: 0 0 4px rgba(255,240,210,.64), 0 0 14px rgba(255,210,130,.28);
+  }
+}
+@keyframes cmdGlow {
+  0%, 100% { opacity: .88; }
+  50% { opacity: 1; text-shadow: 0 0 12px rgba(255,255,255,.10); }
+}
+@keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes phrasePop {
+  0% { opacity: 0; transform: translateY(10px) rotate(var(--rot, 0deg)) scale(.97); }
+  20% { opacity: .22; transform: translateY(0) rotate(var(--rot, 0deg)) scale(1); }
+  80% { opacity: .17; transform: translateY(-4px) rotate(var(--rot, 0deg)) scale(1.01); }
+  100% { opacity: 0; transform: translateY(-16px) rotate(var(--rot, 0deg)) scale(1.03); }
+}
+@keyframes noiseShift {
+  0% { transform: translate(0,0); }
+  25% { transform: translate(-2px,1px); }
+  50% { transform: translate(2px,-1px); }
+  75% { transform: translate(1px,2px); }
+  100% { transform: translate(0,0); }
+}
+@keyframes scanMove { 0% { background-position: 0 0; } 100% { background-position: 0 60px; } }
+@keyframes blackoutBlink {
+  0%, 95%, 100% { background: transparent; }
+  96% { background: rgba(0,0,0,.35); }
+  97% { background: transparent; }
+}
+
+@media (max-width: 800px) {
+  #cmdWindow {
+    width: 92vw;
+    height: 78vh;
+  }
+  #statusPanel {
+    left: 14px;
+    bottom: 14px;
+    font-size: 10px;
+  }
+  #finalWelcome {
+    letter-spacing: .35em;
+    text-indent: .35em;
+  }
+  #finalBrand {
+    letter-spacing: .14em;
+    text-indent: .14em;
+  }
+}

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KIROCITY+ // Garry's Mod CMD Loading Screen</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="mediaBackground">
+    <img class="bg-media active" src="background.gif" alt="background gif">
+    <video class="bg-media" src="bg1.mp4" autoplay muted loop playsinline preload="auto"></video>
+    <video class="bg-media" src="bg2.mp4" autoplay muted loop playsinline preload="auto"></video>
+    <video class="bg-media" src="bg3.mp4" autoplay muted loop playsinline preload="auto"></video>
+  </div>
+  <div id="mediaShade"></div>
+  <div id="blackout"></div>
+  <div id="noise"></div>
+  <div id="scanlines"></div>
+  <div id="vignette"></div>
+  <div id="phraseLayer"></div>
+
+  <main id="cmdWindow">
+    <div id="cmdHeader">
+      <span>Administrator: C:\GarrysMod\KIROCITY\gmod_shell.exe</span>
+      <span class="header-state">ONLINE</span>
+    </div>
+
+    <div id="cmdBody">
+      <div id="introLine">Garry's Mod client shell [Version 14.05]</div>
+      <div id="introLine2">(c) Facepunch Studios / KIROCITY NETWORK. All rights reserved.</div>
+      <div id="logoLine">&gt; <span id="logoText">KIROCITY+</span></div>
+      <div id="cmdLines"></div>
+      <div id="cmdPrompt">
+        <span class="path">C:\GarrysMod\KIROCITY&gt;</span>
+        <span id="cmdInput"></span><span class="cursor">_</span>
+      </div>
+    </div>
+  </main>
+
+  <div id="statusPanel">
+    <div>signal ............. <span id="signal">weak</span></div>
+    <div>archive ............ <span id="archiveStatus">waiting</span></div>
+    <div>render ............. <span id="renderStatus">cmd</span></div>
+  </div>
+
+  <section id="finalScreen" aria-hidden="true">
+    <div id="finalWelcome">WELCOME TO</div>
+    <div id="finalBrandWrap">
+      <div id="finalBrand">KIROCITY</div>
+    </div>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
