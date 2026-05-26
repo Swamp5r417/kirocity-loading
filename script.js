@@ -12,6 +12,7 @@
     cmdPauseMax: 1600,
     bgSwapMin: 7000,
     bgSwapMax: 11000,
+    minLiveSceneTime: 9000,
     finalFallbackDelay: 17000
   };
 
@@ -76,6 +77,8 @@
   var finalBrand = document.getElementById("finalBrand");
   var activeBgIndex = 0;
   var finalStarted = false;
+  var finalTimer = null;
+  var startedAt = Date.now();
 
   function rand(min, max) { return Math.random() * (max - min) + min; }
   function randInt(min, max) { return Math.floor(rand(min, max + 1)); }
@@ -157,6 +160,21 @@
     });
   }
 
+  function setInitialBackground() {
+    var firstVideoIndex = -1;
+    bgItems.forEach(function (item, index) {
+      item.classList.remove("active");
+      if (firstVideoIndex === -1 && item.tagName === "VIDEO") {
+        firstVideoIndex = index;
+      }
+    });
+
+    activeBgIndex = firstVideoIndex !== -1 ? firstVideoIndex : 0;
+    if (bgItems[activeBgIndex]) {
+      bgItems[activeBgIndex].classList.add("active");
+    }
+  }
+
   function rotateBackground() {
     if (finalStarted || !bgItems.length) return;
     bgItems[activeBgIndex].classList.remove('active');
@@ -168,6 +186,10 @@
   function beginFinalScene(reason) {
     if (finalStarted) return;
     finalStarted = true;
+    if (finalTimer) {
+      clearTimeout(finalTimer);
+      finalTimer = null;
+    }
     cmdInput.textContent = "";
     addCmdLine("final transition: " + reason, "warn");
     document.body.classList.add("finalizing");
@@ -177,10 +199,26 @@
     setTimeout(function () { finalBrand.classList.add("ignite"); }, 1100);
   }
 
+  function requestFinalScene(reason) {
+    if (finalStarted || finalTimer) return;
+    var elapsed = Date.now() - startedAt;
+    var remaining = SETTINGS.minLiveSceneTime - elapsed;
+    if (remaining <= 0) {
+      beginFinalScene(reason);
+      return;
+    }
+
+    addCmdLine("final queued: " + reason, "dim");
+    finalTimer = setTimeout(function () {
+      finalTimer = null;
+      beginFinalScene(reason);
+    }, remaining);
+  }
+
   function maybeTriggerFromStatus(statusText) {
     var text = String(statusText || "").toLowerCase();
     if (/starting lua|sending client info|client info|spawnmenu|initializing game ui|game ui|sending signon buffer|precaching|lua started/.test(text)) {
-      beginFinalScene(text);
+      requestFinalScene(text);
     }
   }
 
@@ -207,7 +245,7 @@
   window.SetFilesNeeded = function (needed) {
     addCmdLine("files needed: " + needed, "dim");
     if (Number(needed) === 0) {
-      beginFinalScene("files ready");
+      requestFinalScene("files ready");
     }
   };
 
@@ -216,6 +254,7 @@
   addCmdLine("render profile: monochrome cmd + media bg", "dim");
   addCmdLine("awaiting final stage ...", "warn");
 
+  setInitialBackground();
   ensureVideoPlayback();
   commandLoop();
   setTimeout(showPhrase, 700);
