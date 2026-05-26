@@ -152,9 +152,23 @@
     bgItems.forEach(function (item) {
       if (item.tagName === 'VIDEO') {
         item.muted = true;
-        var playPromise = item.play();
-        if (playPromise && typeof playPromise.catch === 'function') {
-          playPromise.catch(function () {});
+        item.setAttribute("muted", "");
+        item.defaultMuted = true;
+        item.autoplay = true;
+        item.loop = true;
+
+        function attemptPlay() {
+          var playPromise = item.play();
+          if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch(function () {});
+          }
+        }
+
+        if (item.readyState >= 2) {
+          attemptPlay();
+        } else {
+          item.addEventListener("loadeddata", attemptPlay, { once: true });
+          item.addEventListener("canplay", attemptPlay, { once: true });
         }
       }
     });
