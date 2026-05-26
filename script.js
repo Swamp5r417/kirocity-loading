@@ -8,8 +8,8 @@
     cmdPauseMax: 1500,
     statusUpdateMin: 1200,
     statusUpdateMax: 2400,
-    minLiveSceneTime: 9000,
-    finalFallbackDelay: 18000
+    minLiveSceneTime: 22000,
+    finalFallbackDelay: 35000
   };
 
   var cmdTemplates = [
@@ -164,7 +164,7 @@
 
   function maybeTriggerFromStatus(statusText) {
     var text = String(statusText || "").toLowerCase();
-    if (/starting lua|sending client info|client info|spawnmenu|initializing game ui|game ui|sending signon buffer|precaching|lua started/.test(text)) {
+    if (/sending client info|client info|spawnmenu|initializing game ui|game ui|sending signon buffer/.test(text)) {
       requestFinalScene(text);
     }
   }
